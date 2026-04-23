@@ -1,0 +1,6 @@
+/.venv
+/__pycache__
+/components/__pycache__
+/services/__pycache__
+/test_sc.py
+/test_sc_auth.py

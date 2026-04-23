@@ -1,75 +1,179 @@
-# soundcli 🎵
+# soundcli
 
-A SoundCloud terminal music player with a rich TUI — search, queue, and control playback without leaving the terminal.
+  
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│  soundcli                                          12:34:56     │
-├────────────────────────────────────────────────────────────────┤
-│  🔍  Search SoundCloud…                                        │
-├──────────────────────────────────┬─────────────────────────────┤
-│  RESULTS                         │  QUEUE                      │
-│  ▶ Tame Impala - Let It Happen   │  1. track name              │
-│    Flume - Never Be Like You     │  2. another track           │
-│    Bonobo - Kong                 │                             │
-├──────────────────────────────────┴─────────────────────────────┤
-│  ♫  Tame Impala — Let It Happen                                │
-│  ━━━━━━━━━━━━━━━━━━━━━○━━━━━━━━━━━━━━  2:34 / 7:47            │
-│  [F] Search  [Space] Play/Pause  [N] Next  [↑↓] Volume         │
-│  ▶ Playing · 7:47                                    VOL: 80 🔊 │
-└────────────────────────────────────────────────────────────────┘
-```
+A terminal-based SoundCloud music player featuring a responsive TUI for intuitive track search, queue management, and real-time playback control without leaving the command line.
+
+  
+
+## Overview
+
+  
+
+soundcli provides a modern terminal interface for browsing and playing music from SoundCloud. The application integrates with the SoundCloud public API to enable full-featured music discovery and playback capabilities directly from your terminal.
+
+  
+
+![soundcli Screenshot](assets/screenshot.png)
+
+  
 
 ## Requirements
 
-- Python 3.11+
-- `mpv` media player (handles all audio decoding & streaming)
+  
 
-## Install
+- **Python** 3.11 or higher
+
+- **mpv** media player for audio decoding and streaming
+
+  
+
+## Installation
+
+  
+### 1. Install mpv
+
+  
 
 ```bash
-# 1. Install mpv
-brew install mpv          # macOS
-sudo apt install mpv      # Ubuntu/Debian
-choco install mpv         # Windows
 
-# 2. Clone / download the project
-cd soundcli
+# macOS
 
-# 3. Create virtual environment
-python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
+brew install mpv
 
-# 4. Install Python dependencies
-pip install -r requirements.txt
-
-# 5. Run!
-python main.py
 ```
 
+  
+
+```bash
+
+# Ubuntu / Debian
+
+sudo apt install mpv
+
+```
+
+  
+
+```bash
+
+# Windows
+
+choco install mpv
+
+```
+
+  
+
+### 2. Installation
+
+  
+
+```bash
+
+# Clone or download the repository
+
+cd soundcli
+
+```
+
+  
+
+```bash
+
+# Create and activate a Python virtual environment (Optional)
+
+python -m venv .venv
+
+source .venv/bin/activate # On Windows: .venv\Scripts\activate
+
+```
+
+  
+
+```bash
+
+# Install dependencies
+
+pip install -r requirements.txt
+
+```
+
+  
+
+```bash
+
+export SC_CLIENT_ID="YOUR_CLIENT_ID"
+
+export SC_AUTH_TOKEN="YOUR_TOKEN_HERE"
+
+```
+
+  
+
+```bash
+
+# Start the application
+
+python main.py
+
+```
+
+  
+
 ## Keybindings
+
+  
 
 | Key | Action |
 |-----|--------|
 | `F` | Focus search bar |
 | `Enter` | Play selected track |
-| `Space` | Toggle pause |
-| `N` | Next track in queue |
+| `Space` | Toggle play/pause |
+| `N` | Play next track in queue |
 | `A` | Add selected track to queue |
-| `←` / `→` | Seek back / forward 10s |
-| `↑` / `↓` | Volume up / down |
-| `Q` | Quit |
+| `←` / `→` | Seek ±10 seconds |
+| `↑` / `↓` | Adjust volume |
+| `Q` | Exit application |
 
-## How It Works
+  
 
-1. **Search** — Queries the SoundCloud public API (`api-v2.soundcloud.com`) using a scraped `client_id`
-2. **Stream resolution** — Each track's transcoding URL is resolved to a real CDN `.mp3` / HLS URL
-3. **Playback** — `mpv` runs as a subprocess with an IPC socket for real-time control
-4. **TUI** — Built with [Textual](https://github.com/Textualize/textual) for reactive, async UI updates
-5. **Config** — Volume and history are persisted to `~/.config/soundcli/config.json`
+## Architecture
 
-## Notes
+  
 
-- SoundCloud's `client_id` is scraped from their web JS bundle on first run. If it fails, a known fallback is used.
-- On Windows, the IPC socket path uses a named pipe (`\\.\pipe\soundcli-mpv`) — ensure mpv is in your PATH.
-- Seeking and volume work via mpv's JSON IPC protocol over a Unix socket.
+- **Search** — Queries the SoundCloud public API (`api-v2.soundcloud.com`) using an automatically scraped `client_id`
+
+- **Stream Resolution** — Resolves track transcoding URLs to CDN `.mp3` or HLS streams for playback
+
+- **Playback Engine** — Manages `mpv` subprocess with JSON IPC protocol for real-time control
+
+- **User Interface** — Implemented with [Textual](https://github.com/Textualize/textual) for reactive, event-driven UI updates
+
+- **Persistence** — Stores configuration, volume settings, and playback history in `~/.config/soundcli/config.json`
+
+  
+
+## Technical Notes
+
+- You can find `SC_CLIENT_ID` and `SC_AUTH_TOKEN` in `https://soundcloud.com`
+
+- Here is how you can get it and use it:
+
+  
+
+    1. Open SoundCloud in your browser and log in to your account.
+
+    2. Open your browser's Developer Tools (F12 or Right Click -> Inspect).
+
+    3. Go to the Application tab (Chrome/Edge) or Storage tab (Firefox).
+
+    4. Under Cookies -> https://soundcloud.com, look for a cookie named oauth_token.
+
+    5. Copy its value (it usually looks something like 2-29xxxx...).
+
+- The SoundCloud `client_id` is automatically extracted from the SoundCloud web bundle on first startup. If extraction fails, a known fallback ID is used.
+
+- Windows users should ensure `mpv` is available in the system PATH. The IPC socket uses a named pipe at `\\.\pipe\soundcli-mpv`.
+
+- Playback control and volume adjustment operate through mpv's JSON IPC protocol over Unix sockets (or named pipes on Windows).

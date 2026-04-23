@@ -31,5 +31,5 @@ class SearchBar(Horizontal):
     """
 
     def compose(self) -> ComposeResult:
-        yield Static("🔍", classes="search-icon")
+        yield Static("🗁", classes="search-icon")
         yield Input(placeholder="Search SoundCloud… (press / to focus)", id="search-input")

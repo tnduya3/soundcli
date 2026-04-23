@@ -115,8 +115,8 @@ class PlayerBar(Vertical):
             yield StringProgressBar(id="progress-label")
             yield Label("0:00", classes="time-label", id="dur-label")
         with Horizontal(classes="controls-row"):
-            yield Label("  [⏮ k] [⏯ space] [⏭ j]", classes="controls", id="ctrl-label", markup=False)
-            yield Label("🔊 ░░░░░░░░░░  vol: 70", classes="vol-label", id="vol-label")
+            yield Label("  [◀◀ k] [▷| space] [▶▶ j]", classes="controls", id="ctrl-label", markup=False)
+            yield Label("🕪 ⚫█▀█▄▄𓂸  vol: 70", classes="vol-label", id="vol-label")
             yield Label("[/] search  [\\] toggle queue  [r] repeat: off  [a] queue  [l] like  [q] quit", classes="hint-label", id="hint-label", markup=False)
 
     def on_mount(self) -> None:
@@ -129,7 +129,7 @@ class PlayerBar(Vertical):
     def _render_np(self) -> None:
         if self._track:
             if self._paused:
-                icon = "⏸ "
+                icon = "▐▐"
             else:
                 icon = f"[{self._eq_frames[self._eq_index]}] "
             self.query_one("#np-label", Label).update(f"{icon} {self._track.display_title}")
@@ -149,7 +149,7 @@ class PlayerBar(Vertical):
             self._eq_timer.pause()
             
         self._render_np()
-        ctrl = "  [⏮ k] [⏸ space] [⏭ j]" if not paused else "  [⏮ k] [▶ space] [⏭ j]"
+        ctrl = "  [◀◀ k] [▷| space] [▶▶ j]" if not paused else "  [◀◀ k] [▷| space] [▶▶ j]"
         self.query_one("#ctrl-label", Label).update(ctrl)
 
     def update_repeat(self, repeat: bool) -> None:
@@ -174,4 +174,4 @@ class PlayerBar(Vertical):
 
     def update_volume(self, vol: int) -> None:
         self._volume = vol
-        self.query_one("#vol-label", Label).update(f"🔊 {_vol_bar(vol)}  vol: {vol}")
+        self.query_one("#vol-label", Label).update(f"🕪 {_vol_bar(vol)}  vol: {vol}")

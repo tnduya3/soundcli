@@ -4,3 +4,9 @@
 /services/__pycache__
 /test_sc.py
 /test_sc_auth.py
+soundcli.egg-info/dependency_links.txt
+soundcli.egg-info/entry_points.txt
+soundcli.egg-info/PKG-INFO
+soundcli.egg-info/requires.txt
+soundcli.egg-info/SOURCES.txt
+soundcli.egg-info/top_level.txt

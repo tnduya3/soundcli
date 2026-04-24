@@ -137,6 +137,10 @@ def _to_track(item) -> Optional[Track]:
             duration_ms=int(item.full_duration or item.duration or 0),
             permalink_url=item.permalink_url,
             artwork_url=getattr(item, "artwork_url", None),
+            play_count=int(getattr(item, "play_count", 0) or 0),
+            likes_count=int(getattr(item, "likes_count", 0) or 0),
+            created_at=getattr(item, "created_at", None),
+            genre=getattr(item, "genre", None),
         )
     except Exception:
         return None
@@ -205,14 +209,14 @@ def _resolve_transcoding_url(transcoding_url: str, client_id: str, track_auth: s
 # ---------------------------------------------------------------------------
 
 DEMO_TRACKS = [
-    Track("d1", "Midnight City",   "M83",           243000),
-    Track("d2", "Intro",           "The xx",        128000),
-    Track("d3", "Crystalised",     "The xx",        213000),
-    Track("d4", "Bad Guy",         "Billie Eilish", 194000),
-    Track("d5", "Blinding Lights", "The Weeknd",    200000),
-    Track("d6", "Sunflower",       "Post Malone",   158000),
-    Track("d7", "Levitating",      "Dua Lipa",      203000),
-    Track("d8", "Heat Waves",      "Glass Animals", 238000),
+    Track("d1", "Midnight City",   "M83",           243000, play_count=12500000, likes_count=85000, created_at="2011-09-20T00:00:00Z", genre="Electronic"),
+    Track("d2", "Intro",           "The xx",        128000, play_count=8300000, likes_count=52000, created_at="2009-02-03T00:00:00Z", genre="Indie"),
+    Track("d3", "Crystalised",     "The xx",        213000, play_count=15200000, likes_count=98000, created_at="2009-08-10T00:00:00Z", genre="Indie"),
+    Track("d4", "Bad Guy",         "Billie Eilish", 194000, play_count=892000000, likes_count=2100000, created_at="2018-03-29T00:00:00Z", genre="Pop"),
+    Track("d5", "Blinding Lights", "The Weeknd",    200000, play_count=750000000, likes_count=1800000, created_at="2019-11-29T00:00:00Z", genre="Synthwave"),
+    Track("d6", "Sunflower",       "Post Malone",   158000, play_count=580000000, likes_count=1200000, created_at="2018-08-03T00:00:00Z", genre="Hip-Hop"),
+    Track("d7", "Levitating",      "Dua Lipa",      203000, play_count=650000000, likes_count=1500000, created_at="2020-10-23T00:00:00Z", genre="Disco-Pop"),
+    Track("d8", "Heat Waves",      "Glass Animals", 238000, play_count=490000000, likes_count=1100000, created_at="2020-06-19T00:00:00Z", genre="Indie"),
 ]
 
 

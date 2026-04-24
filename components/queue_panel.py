@@ -1,7 +1,7 @@
 from __future__ import annotations
 from textual.app import ComposeResult
 from textual.widgets import ListView, ListItem, Label, Static
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from models import Track
 
 
@@ -10,7 +10,7 @@ class QueuePanel(Vertical):
     QueuePanel {
         border: solid $primary-darken-2;
         background: $surface;
-        width: 30;
+        width: 32;
         height: 1fr;
     }
     QueuePanel .queue-header {
@@ -21,6 +21,13 @@ class QueuePanel(Vertical):
         color: $accent;
         text-style: bold;
     }
+    QueuePanel .queue-hints {
+        background: $primary-darken-3;
+        padding: 0 1;
+        height: 2;
+        color: $text-muted;
+        content-align: left middle;
+    }
     QueuePanel ListView {
         background: $surface;
         border: none;
@@ -30,6 +37,7 @@ class QueuePanel(Vertical):
         padding: 0 1;
         height: 3;
     }
+    QueuePanel ListItem:hover { background: $surface-lighten-1; }
     QueuePanel .q-title { color: $text; }
     QueuePanel .q-artist { color: $text-muted; }
     QueuePanel .q-empty { color: $text-muted; padding: 1 1; }
@@ -39,9 +47,11 @@ class QueuePanel(Vertical):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._queue: list[Track] = []
+        self._selected_idx: int = -1
 
     def compose(self) -> ComposeResult:
-        yield Label("  ☰ Queue", classes="queue-header")
+        yield Label("  ☰ Queue (0)", classes="queue-header", id="queue-header")
+        yield Label("  ↑/↓ Move  |  del Delete  |  c Clear", classes="queue-hints")
         yield ListView(id="queue-list")
 
     def add_track(self, track: Track) -> None:
@@ -57,7 +67,43 @@ class QueuePanel(Vertical):
 
     def clear_queue(self) -> None:
         self._queue.clear()
+        self._selected_idx = -1
         self._refresh_list()
+    
+    def move_item_up(self) -> None:
+        """Move selected queue item up."""
+        lv = self.query_one("#queue-list", ListView)
+        if not lv.children:
+            return
+        idx = lv.index
+        if idx > 0:
+            self._queue[idx - 1], self._queue[idx] = self._queue[idx], self._queue[idx - 1]
+            self._refresh_list()
+            lv.index = idx - 1
+    
+    def move_item_down(self) -> None:
+        """Move selected queue item down."""
+        lv = self.query_one("#queue-list", ListView)
+        if not lv.children:
+            return
+        idx = lv.index
+        if idx < len(self._queue) - 1:
+            self._queue[idx], self._queue[idx + 1] = self._queue[idx + 1], self._queue[idx]
+            self._refresh_list()
+            lv.index = idx + 1
+    
+    def remove_selected(self) -> None:
+        """Remove the selected item from queue."""
+        lv = self.query_one("#queue-list", ListView)
+        if not lv.children or len(self._queue) == 0:
+            return
+        idx = lv.index
+        if 0 <= idx < len(self._queue):
+            self._queue.pop(idx)
+            self._refresh_list()
+            # Keep selection on same index if possible, or move up
+            if lv.children:
+                lv.index = min(idx, len(self._queue) - 1)
 
     @property
     def queue(self) -> list[Track]:
@@ -66,6 +112,11 @@ class QueuePanel(Vertical):
     def _refresh_list(self) -> None:
         lv = self.query_one("#queue-list", ListView)
         lv.clear()
+        
+        # Update header with queue count
+        header = self.query_one("#queue-header", Label)
+        header.update(f"  ☰ Queue ({len(self._queue)})")
+        
         if not self._queue:
             lv.mount(ListItem(Label("  Queue is empty", classes="q-empty")))
             return

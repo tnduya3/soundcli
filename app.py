@@ -98,6 +98,10 @@ class SoundCLI(App):
         Binding("-",     "vol_down",       "Vol-",       show=False),
         Binding("\\",    "toggle_queue",   "Toggle Queue",show=False),
         Binding("r",     "toggle_repeat",  "Repeat Track",show=False),
+        Binding("up",    "queue_move_up",  "Queue Up",   show=False),
+        Binding("down",  "queue_move_down","Queue Down", show=False),
+        Binding("delete","queue_remove",   "Queue Del",  show=False),
+        Binding("c",     "queue_clear",    "Queue Clear",show=False),
         Binding("q",     "quit",           "Quit"),
     ]
 
@@ -311,6 +315,42 @@ class SoundCLI(App):
         status = "enabled" if self._repeat_track else "disabled"
         self._set_status(f"Repeat track is now {status}.")
         self.query_one(PlayerBar).update_repeat(self._repeat_track)
+
+    def action_queue_move_up(self) -> None:
+        """Move selected queue item up."""
+        try:
+            qp = self.query_one(QueuePanel)
+            qp.move_item_up()
+            self._set_status("Moved track up in queue.")
+        except Exception:
+            pass
+
+    def action_queue_move_down(self) -> None:
+        """Move selected queue item down."""
+        try:
+            qp = self.query_one(QueuePanel)
+            qp.move_item_down()
+            self._set_status("Moved track down in queue.")
+        except Exception:
+            pass
+
+    def action_queue_remove(self) -> None:
+        """Remove selected track from queue."""
+        try:
+            qp = self.query_one(QueuePanel)
+            qp.remove_selected()
+            self._set_status("Removed track from queue.")
+        except Exception:
+            pass
+
+    def action_queue_clear(self) -> None:
+        """Clear entire queue."""
+        try:
+            qp = self.query_one(QueuePanel)
+            qp.clear_queue()
+            self._set_status("Queue cleared.")
+        except Exception:
+            pass
 
     async def action_quit(self) -> None:
         await self._player.stop()

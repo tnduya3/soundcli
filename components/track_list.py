@@ -3,6 +3,7 @@ from typing import Optional
 from textual.app import ComposeResult
 from textual.widgets import ListView, ListItem, Label, Static
 from textual.reactive import reactive
+from textual.containers import Horizontal
 from models import Track
 
 
@@ -10,11 +11,12 @@ class TrackItem(ListItem):
     DEFAULT_CSS = """
     TrackItem {
         padding: 0 1;
-        height: 3;
+        height: 4;
     }
     TrackItem:hover { background: $surface-lighten-1; }
     TrackItem.--highlight { background: $accent-darken-2; }
     TrackItem .track-title { color: $text; }
+    TrackItem .track-artist { color: $text-muted; }
     TrackItem .track-meta  { color: $text-muted; }
     TrackItem .track-dur   { color: $accent; dock: right; width: 6; }
     TrackItem .now-playing { color: $success; width: 2; }
@@ -31,7 +33,20 @@ class TrackItem(ListItem):
         from textual.containers import Vertical
         with Vertical():
             yield Label(self.track.title, classes="track-title")
-            yield Label(self.track.artist, classes="track-meta")
+            yield Label(self.track.artist, classes="track-artist")
+            # Display metadata: plays, likes, date, genre
+            meta_parts = []
+            if self.track.play_count > 0:
+                meta_parts.append(f"▶ {self.track.play_count_str}")
+            if self.track.likes_count > 0:
+                meta_parts.append(f"♥ {self.track.likes_count_str}")
+            if self.track.created_date_str:
+                meta_parts.append(self.track.created_date_str)
+            if self.track.genre:
+                meta_parts.append(f"[{self.track.genre}]")
+            
+            meta_text = " · ".join(meta_parts) if meta_parts else "No metadata"
+            yield Label(meta_text, classes="track-meta")
         yield Label(self.track.duration_str, classes="track-dur")
 
 

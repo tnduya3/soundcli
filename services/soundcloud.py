@@ -19,6 +19,7 @@ import os
 from typing import Optional
 
 import requests as _requests
+import re
 
 from models import Track
 
@@ -33,6 +34,33 @@ class SoundCloudError(Exception):
     pass
 
 
+def extract_client_id() -> Optional[str]:
+    try:
+        r = _requests.get("https://soundcloud.com", timeout=5)
+        scripts = re.findall(r'<script crossorigin src="(https://a-v2\.sndcdn\.com/assets/[^"]+)"', r.text)
+        for script in scripts:
+            sr = _requests.get(script, timeout=5)
+            match = re.search(r'client_id[:=]"([a-zA-Z0-9]{32})"', sr.text)
+            if match:
+                return match.group(1)
+    except Exception:
+        pass
+    return None
+
+
+def extract_auth_token() -> Optional[str]:
+    try:
+        import browser_cookie3
+        # Load from all default browsers
+        cj = browser_cookie3.load(domain_name='soundcloud.com')
+        for cookie in cj:
+            if cookie.name == 'oauth_token':
+                return cookie.value
+    except Exception:
+        pass
+    return None
+
+
 class SoundCloudService:
     def __init__(self, client_id: str = None, auth_token: str = None) -> None:
         if not _SC_AVAILABLE:
@@ -40,17 +68,23 @@ class SoundCloudService:
                 "soundcloud-v2 is not installed.\n"
                 "Run: pip install soundcloud-v2"
             )
-        client_id = client_id or os.environ.get("SC_CLIENT_ID") or None
-        auth_token = auth_token or os.environ.get("SC_AUTH_TOKEN") or None
+        
+        # 1. Take arguments or environment variables
+        self.client_id = client_id or os.environ.get("SC_CLIENT_ID") or None
+        self.auth_token = auth_token or os.environ.get("SC_AUTH_TOKEN") or None
+
+        # 2. Extract automatically if missing
+        if not self.client_id:
+            self.client_id = extract_client_id()
+        if not self.auth_token:
+            self.auth_token = extract_auth_token()
+
         try:
-            self._api = _sc_lib.SoundCloud(client_id=client_id, auth_token=auth_token)
+            self._api = _sc_lib.SoundCloud(client_id=self.client_id, auth_token=self.auth_token)
         except Exception as e:
             raise SoundCloudError(
                 f"Could not initialise SoundCloud client: {e}\n\n"
-                "Set your client_id manually:\n"
-                "  1. Open soundcloud.com in a browser\n"
-                "  2. DevTools → Network → search for 'client_id' in any request\n"
-                "  3. export SC_CLIENT_ID=<your_id>  then re-run"
+                "Auto-fetch failed. Set your tokens manually or login to SoundCloud on your browser."
             ) from e
 
     async def search(self, query: str, limit: int = 20) -> list[Track]:

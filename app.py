@@ -34,6 +34,12 @@ _sc_init_error: str = ""
 try:
     from services.soundcloud import SoundCloudService
     _sc = SoundCloudService(client_id=_cfg.get("sc_client_id"), auth_token=_cfg.get("sc_auth_token"))
+    # Save automatically extracted tokens
+    if getattr(_sc, "client_id", None) and getattr(_sc, "auth_token", None):
+        if _cfg.get("sc_client_id") != _sc.client_id or _cfg.get("sc_auth_token") != _sc.auth_token:
+            _cfg["sc_client_id"] = _sc.client_id
+            _cfg["sc_auth_token"] = _sc.auth_token
+            config.save(_cfg)
 except Exception as _e:
     from services.soundcloud import DemoSoundCloudService
     _sc = DemoSoundCloudService()

@@ -15,6 +15,8 @@ _DEFAULTS: dict[str, Any] = {
     "volume": 70,
     "liked_ids": [],
     "history": [],
+    "sc_client_id": None,
+    "sc_auth_token": None,
 }
 
 

@@ -55,11 +55,11 @@ AJAW_DANCE_PATHS = [
 #   tall = 1 terminal row.
 #
 #   Player bar slot is 7 rows tall  →  need AJAW_H = 7 * 2 = 14 pixels
-#   We want ~26 terminal cols wide  →  AJAW_W = 26 pixels (1 px = 1 col)
+#   CSS widget is 28 terminal cols wide  →  AJAW_W = 28 pixels (1 px = 1 col)
 #
 # If Ajaw looks too small/large, tune AJAW_W only (keep AJAW_H = 14 to
-# preserve the 7-row fit).
-AJAW_W = 26   # terminal columns
+# preserve the 7-row fit). Dimensions must match CSS widget size for proper alignment.
+AJAW_W = 28   # terminal columns (matches CSS widget width)
 AJAW_H = 14   # terminal rows × 2  (= 7 visible rows)
 
 
@@ -67,19 +67,19 @@ AJAW_H = 14   # terminal rows × 2  (= 7 visible rows)
 # Fallback ASCII art (shown when images are unavailable)
 # ---------------------------------------------------------------------------
 _FALLBACK_SLEEP = (
-    "  ( ☀ ) z  \n"
-    "  (■ _ ■)  \n"
-    "  /|▌|\\    \n"
-    "  ╱ ██╲    \n"
-    " ╱╱   ╲╲   \n"
-    "  |   |    \n"
-    "  ⌒   ⌒    "
+    "     ( ☀ ) z      \n"
+    "     (■ _ ■)      \n"
+    "     /|▌|\\       \n"
+    "     ╱ ██╲       \n"
+    "    ╱╱   ╲╲      \n"
+    "     |   |       \n"
+    "     ⌒   ⌒      "
 )
 _FALLBACK_DANCE = [
-    "\\( ☀ )/ ♪  \n─(■ ▽ ■)─  \n \\╲▌╱/     \n  \\  ██    \n  ╱╲╱  ╲   \n  ╱    ╲   \n /──   ──\\ ",
-    " /( ☀ )\\ ♫ \n─(■ o ■)─  \n  /╲▌╱\\    \n  ╱  ██╲   \n ╱╱  ╲╲╲   \n /     \\   \n─╯     ╰─  ",
-    "  ( ☀ )  ♩ \n─(■ ◡ ■)─  \n  /╲▌╱/    \n ╱   ██╲   \n╱   ╱  ╲╲  \n    |   |   \n  ──┘   └──",
-    "* \\(☀)/  * \n ─(■▼■)─   \n  / ▌╲     \n  ╱ ██╲    \n ╱╱   ╲╲   \n  |   |    \n ─┘   └─   ",
+    "    \\( ☀ )/ ♪   \n   ─(■ ▽ ■)─    \n    \\╲▌╱/       \n     \\  ██     \n     ╱╲╱  ╲     \n     ╱    ╲     \n    /──   ──\\   ",
+    "    /( ☀ )\\ ♫   \n   ─(■ o ■)─    \n     /╲▌╱\\     \n     ╱  ██╲     \n    ╱╱  ╲╲╲     \n    /     \\     \n   ─╯     ╰─    ",
+    "     ( ☀ )  ♩  \n    ─(■ ◡ ■)─   \n     /╲▌╱/      \n    ╱   ██╲     \n   ╱   ╱  ╲╲    \n       |   |    \n     ──┘   └──  ",
+    "   * \\(☀)/  *  \n    ─(■▼■)─    \n     / ▌╲      \n     ╱ ██╲     \n    ╱╱   ╲╲    \n     |   |     \n    ─┘   └─    ",
 ]
 
 
@@ -95,18 +95,25 @@ def _load_pixels(path: Path, w: int, h: int) -> "Optional[Pixels]":
         with PILImage.open(path) as img:
             img = img.convert("RGBA")
             
-            # Clean up transparent pixels that might hold white color data 
-            # (which causes white blocks in rich-pixels/terminals).
-            px = img.load()
+            # Resize FIRST using high-quality LANCZOS to minimize color fringing
+            img = img.resize((w, h), PILImage.LANCZOS)
+            
+            # Then clean up alpha channel to avoid color halos
+            # Create a new RGBA image with clean transparency
+            clean = PILImage.new("RGBA", img.size, (0, 0, 0, 0))
+            px_src = img.load()
+            px_dst = clean.load()
+            
             for y in range(img.height):
                 for x in range(img.width):
-                    r, g, b, a = px[x, y]
-                    # If heavily transparent, make it completely transparent black
-                    if a < 128:
-                        px[x, y] = (0, 0, 0, 0)
+                    r, g, b, a = px_src[x, y]
+                    # Keep only clearly opaque pixels; threshold rest to transparent
+                    if a > 200:
+                        px_dst[x, y] = (r, g, b, 255)
+                    else:
+                        px_dst[x, y] = (0, 0, 0, 0)
             
-            img = img.resize((w, h), PILImage.NEAREST)
-            return Pixels.from_image(img)
+            return Pixels.from_image(clean)
     except Exception:
         return None
 

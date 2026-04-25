@@ -15,6 +15,7 @@ soundcli provides a modern terminal interface for browsing and playing music fro
   
 
 ![soundcli Screenshot](assets/screenshot.png)
+
   
 
 ## Requirements

@@ -4,3 +4,5 @@ httpx>=0.27.0
 platformdirs>=4.2.0
 browser-cookie3>=0.19.1
 requests>=2.31.0
+pillow>=10.4.0
+rich-pixels>=3.0.1

@@ -9,7 +9,7 @@ from typing import Optional
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Input, Label, Header, ListView, ListItem
+from textual.widgets import Input, Label, Header, ListView, ListItem, Static
 from textual import work, on
 
 import os
@@ -46,27 +46,37 @@ except Exception as _e:
     _sc_init_error = str(_e)
 
 
+_LOGO = """
+  ____                        _  ____ _     ___ 
+ / ___|  ___  _   _ _ __   __| |/ ___| |   |_ _|
+ \\___ \\ / _ \\| | | | '_ \\ / _` | |   | |    | | 
+  ___) | (_) | |_| | | | | (_| | |___| |___ | | 
+ |____/ \\___/ \\__,_|_| |_|\\__,_|\\____|_____|___|
+"""
+
 class SoundCLI(App):
     """Main application."""
 
     # Provide a custom theme using the desired red, white, dark grey palette
     CSS = """
-    $accent: #cc241d;
-    $accent-darken-2: #8a1712;
-    $surface: #252526;
-    $surface-lighten-1: #2d2d2d;
-    $primary-darken-3: #1e1e1e;
-    $text: #f9f9f9;
-    $text-muted: #888888;
-    $success: #cc241d;
+    $accent: #ff00ff;
+    $accent-darken-2: #800080;
+    $surface: #0a0a0a;
+    $surface-lighten-1: #1a1a1a;
+    $primary-darken-3: #111111;
+    $text: #00ff00;
+    $text-muted: #008800;
+    $success: #00ffff;
 
     Screen {
-        background: #121212;
+        background: #000000;
     }
-    Header {
-        background: #1e1e1e;
-        color: #f9f9f9;
-        height: 2;
+    #ascii-logo {
+        height: 7;
+        content-align: center middle;
+        color: #00ffff;
+        text-style: bold;
+        background: #000000;
     }
     .main-area {
         height: 1fr;
@@ -74,21 +84,24 @@ class SoundCLI(App):
     .left-panel {
         width: 1fr;
         height: 1fr;
+        border: heavy $accent;
+        margin: 0 1;
     }
     .results-label {
         height: 2;
         padding: 0 1;
-        background: #1e1e1e;
-        color: #cc241d;
+        background: $primary-darken-3;
+        color: $accent;
         content-align: left middle;
         text-style: bold;
     }
     .status-bar {
         height: 1;
-        background: #2d2d2d;
+        background: $surface-lighten-1;
         padding: 0 2;
-        color: #cccccc;
+        color: $success;
         content-align: left middle;
+        text-style: bold;
     }
     """
 
@@ -128,7 +141,7 @@ class SoundCLI(App):
     # ------------------------------------------------------------------
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True)
+        yield Static(_LOGO, id="ascii-logo")
         yield SearchBar()
         with Horizontal(classes="main-area"):
             with Vertical(classes="left-panel"):
@@ -203,7 +216,7 @@ class SoundCLI(App):
     # Playback
     # ------------------------------------------------------------------
 
-    @work(exclusive=False)
+    @work(exclusive=True)
     async def _play_track(self, track: Track) -> None:
         self._set_status(f"Loading: {track.display_title}...")
         pb = self.query_one(PlayerBar)

@@ -116,14 +116,21 @@ class MPVPlayer:
                 await asyncio.sleep(0.3)
 
     async def _send_command(self, cmd: list) -> Optional[dict]:
-        if not self._ipc_connected or not self._writer:
+        if not self._ipc_connected or not self._writer or not self._reader:
             return None
         try:
-            payload = json.dumps({"command": cmd}) + "\n"
+            req_id = getattr(self, '_req_id', 0) + 1
+            self._req_id = req_id
+            payload = json.dumps({"command": cmd, "request_id": req_id}) + "\n"
             self._writer.write(payload.encode())
             await self._writer.drain()
-            line = await asyncio.wait_for(self._reader.readline(), timeout=1.0)
-            return json.loads(line.decode().strip())
+            for _ in range(50):
+                line = await asyncio.wait_for(self._reader.readline(), timeout=1.0)
+                if not line: break
+                r = json.loads(line.decode().strip())
+                if r.get("request_id") == req_id:
+                    return r
+            return None
         except Exception:
             return None
 

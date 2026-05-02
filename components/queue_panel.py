@@ -8,10 +8,11 @@ from models import Track
 class QueuePanel(Vertical):
     DEFAULT_CSS = """
     QueuePanel {
-        border: solid $primary-darken-2;
+        border: heavy $accent-darken-2;
         background: $surface;
-        width: 32;
+        width: 34;
         height: 1fr;
+        margin: 0 1;
     }
     QueuePanel .queue-header {
         background: $primary-darken-3;
@@ -25,7 +26,7 @@ class QueuePanel(Vertical):
         background: $primary-darken-3;
         padding: 0 1;
         height: 2;
-        color: $text-muted;
+        color: $success;
         content-align: left middle;
     }
     QueuePanel ListView {
@@ -37,11 +38,11 @@ class QueuePanel(Vertical):
         padding: 0 1;
         height: 3;
     }
-    QueuePanel ListItem:hover { background: $surface-lighten-1; }
-    QueuePanel .q-title { color: $text; }
+    QueuePanel ListItem:hover { background: $surface-lighten-1; border-left: thick $accent; }
+    QueuePanel .q-title { color: $text; text-style: bold; }
     QueuePanel .q-artist { color: $text-muted; }
     QueuePanel .q-empty { color: $text-muted; padding: 1 1; }
-    QueuePanel .q-index { color: $accent; width: 3; }
+    QueuePanel .q-index { color: $accent; width: 4; }
     """
 
     def __init__(self, **kwargs) -> None:

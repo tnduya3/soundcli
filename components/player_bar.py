@@ -35,7 +35,7 @@ def _fmt(sec: float) -> str:
 
 def _vol_bar(vol: int) -> str:
     filled = round(vol / 10)
-    return "█" * filled + "░" * (10 - filled)
+    return "▓" * filled + "░" * (10 - filled)
 
 
 # ---------------------------------------------------------------------------
@@ -195,10 +195,14 @@ class StringProgressBar(Widget):
     """
     pct = reactive(0.0)
 
+    def watch_pct(self) -> None:
+        self.refresh()
+
     def render(self) -> Text:
         w = max(self.size.width - 2, 20)
-        filled = round((self.pct / 100) * w)
-        return Text(f" {'━' * filled}{'─' * (w - filled)} ")
+        filled = max(0, min(w, round((self.pct / 100) * w)))
+        bar = "▓" * filled + "░" * (w - filled)
+        return Text(f"[{bar}]", style="bold #00ffff", no_wrap=True, overflow="crop")
 
 
 # ---------------------------------------------------------------------------
@@ -209,8 +213,8 @@ class PlayerBar(Vertical):
     DEFAULT_CSS = """
     PlayerBar {
         height: 9;
-        background: $primary-darken-3;
-        border-top: solid $accent;
+        background: $surface;
+        border-top: heavy $success;
         padding: 0 2;
     }
     PlayerBar AjawWidget {
@@ -229,7 +233,7 @@ class PlayerBar(Vertical):
         padding-top: 1;
     }
     PlayerBar .progress-row {
-        height: 2;
+        height: 1;
         width: 1fr;
         align: left middle;
     }
@@ -318,8 +322,9 @@ class PlayerBar(Vertical):
         self.query_one("#dur-label", Label).update(_fmt(dur_sec))
 
     def on_resize(self) -> None:
-        self.query_one("#progress-label", StringProgressBar).refresh()
+        bar = self.query_one("#progress-label", StringProgressBar)
+        bar.refresh()  # Re-render progress bar to fit new width
 
     def update_volume(self, vol: int) -> None:
         self._volume = vol
-        self.query_one("#vol-label", Label).update(f"🕪 {_vol_bar(vol)}")
+        self.query_one("#vol-label", Label).update(f"🕪 {_vol_bar(vol)}  vol: {vol}")

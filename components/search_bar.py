@@ -8,21 +8,24 @@ class SearchBar(Horizontal):
     SearchBar {
         height: 3;
         padding: 0 1;
+        margin: 1 1;
         background: $surface;
-        border-bottom: solid $primary-darken-2;
+        border: heavy $accent-darken-2;
         align: left middle;
     }
     SearchBar .search-icon {
-        width: 4;
-        color: $accent;
+        width: 10;
+        color: $success;
         content-align: center middle;
-        height: 3;
+        height: 1;
+        text-style: bold;
     }
     SearchBar Input {
         border: none;
         background: transparent;
         height: 1;
         width: 1fr;
+        color: $text;
     }
     SearchBar Input:focus {
         border: none;
@@ -31,5 +34,5 @@ class SearchBar(Horizontal):
     """
 
     def compose(self) -> ComposeResult:
-        yield Static("🗁", classes="search-icon")
-        yield Input(placeholder="Search SoundCloud… (press / to focus)", id="search-input")
+        yield Static("[█▒ SEARCH]", classes="search-icon")
+        yield Input(placeholder="Search SoundCloud... (press / to focus)", id="search-input")
